@@ -1,0 +1,108 @@
+:root{
+  --dark: #524A4E;  
+  --light-pink: #FDEFF4;
+  --pink: #FFC0D3;
+  --dark-pink: #FFB0C8;
+  --white: #FFFFFF;
+  --light-blue: #9CF6F6;
+  --blue: #89D2DC;
+  --dark-blue: #69A2B0;
+  --yellow: #FFFD98;
+
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html{
+    scroll-behavior: smooth;
+}
+
+body {
+    height: 100vh;  
+    width: 100vw;
+    font-family: 'Helvetica', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--light);
+    perspective: 800px;
+}
+
+.main-container{
+    height:100vh;
+    width: 100vw;
+    position: relative;
+    border: 1px solid green;
+}
+
+.index{
+    border: 1px solid blue;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap:10px;
+}
+
+.figure {
+    position: absolute;
+    height: 200px;
+    width: 80px;
+    background: var(--pink);
+}
+
+.controls-container{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap:100px;
+}
+
+.controls {
+    color: var(--light-pink);
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    font-size: 30px;
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 11;
+}
+
+#nextbtn{
+    padding-left;
+}
+
+.controls:hover {
+    color: var(--dark-pink);
+}
+
+.piano-carousel {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    transform-style: preserve-3d;
+}
+
+.piano {
+    position: absolute;
+    top: 40%;
+    left: 20%;
+    width: 160px;
+    height: 120px;
+    background: var(--dark);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    border-radius: 10px;
+    transition: transform 0.5s;
+}
