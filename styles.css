@@ -76,10 +76,6 @@ body {
     z-index: 11;
 }
 
-#nextbtn{
-    padding-left;
-}
-
 .controls:hover {
     color: var(--dark-pink);
 }
@@ -107,8 +103,15 @@ model-viewer {
 }
 
 
-/* Smaller size for back pianos */
 .piano:nth-child(n+2) model-viewer {
     width: 80%;  /* Scale down for back pianos */
     height: 80%;
+}
+
+.label {
+    color: rgb(0, 0, 0);
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 4px;
+    font-weight: bold;
 }

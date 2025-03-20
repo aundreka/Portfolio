@@ -15,34 +15,32 @@ const colors = ["red", "blue", "green", "yellow", "purple"];
 document.querySelectorAll(".piano").forEach((piano, index) => {
   piano.addEventListener("load", async () => {
       const model = piano.model;
-      if (!model) return; // Ensure model exists
 
       const materials = model.materials;
-      if (!materials || materials.length === 0) return; // Ensure materials exist
+      if (!materials || materials.length === 0) return;
 
-      const material = materials[0]; // Target the first material
+      const material = materials[0];
       const colorFactor = getColorFactor(colors[index]);
 
       if (material.pbrMetallicRoughness) {
           material.pbrMetallicRoughness.setBaseColorFactor(colorFactor);
-          material.pbrMetallicRoughness.baseColorTexture = null; // Remove any transparency from textures
+          material.pbrMetallicRoughness.baseColorTexture = null; 
       }
 
-      // Ensure the material is not transparent
       if (material.alphaMode) {
-          material.alphaMode = "OPAQUE"; // Explicitly set it to opaque
+          material.alphaMode = "OPAQUE"; 
       }
   });
 });
 function getColorFactor(color) {
   const colorMap = {
-    "red": [1, 0.9, 0.9, 1],    // Soft pastel red
-    "blue": [0.9, 0.95, 1, 1],   // Soft pastel blue
-    "green": [0.9, 1, 0.9, 1],   // Soft pastel green
-    "yellow": [1, 1, 0.9, 1],    // Soft pastel yellow
-    "purple": [0.9, 0.9, 1, 1]   // Soft pastel purple
+    "red": [1, 0.9, 0.9, 1],    
+    "blue": [0.9, 0.95, 1, 1],  
+    "green": [0.9, 1, 0.9, 1],  
+    "yellow": [1, 1, 0.9, 1],    
+    "purple": [0.9, 0.9, 1, 1]  
     };
-  return colorMap[color] || [1, 1, 1, 1]; // Default to white if not found
+  return colorMap[color] || [1, 1, 1, 1]; 
 }
 
 pianos.forEach((piano) => {
@@ -82,8 +80,8 @@ function animateRotation(targetIndex) {
       translateZ(${z}px) 
       translateY(${-y}px)`;
 
-    let depth = Math.cos(rad); // Closer to 1 means closer to viewer
-    piano.style.zIndex = Math.round((depth + 1) * 100); // Scale from 0 to 200
+    let depth = Math.cos(rad); 
+    piano.style.zIndex = Math.round((depth + 1) * 100); 
   
   });
 
@@ -100,7 +98,6 @@ prevBtn.addEventListener("click", () => {
 
 animateRotation(0);
 
-// 🎯 **Dynamic Dragging for Center Piano**
 let isDragging = false;
 let startX = 0, startY = 0;
 let lastOrbitX = 90, lastOrbitY = 90;
@@ -154,3 +151,4 @@ window.addEventListener("mousemove", drag);
 window.addEventListener("touchmove", drag);
 window.addEventListener("mouseup", stopDrag);
 window.addEventListener("touchend", stopDrag);
+

@@ -153,4 +153,3 @@ window.addEventListener("touchend", stopDrag);
 
 
 
-its only targeting one specific piano but it should target the piano thats in the center, 
