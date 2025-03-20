@@ -6,44 +6,47 @@ const pianos = document.querySelectorAll(".piano");
 let currentAngle = 0;
 const totalPianos = pianos.length;
 const angleStep = 360 / totalPianos;
-const radius = 200; // radius of the circular path
+const radius = 620;
+const heightFactor = 120;
+const offsetFactor = 80;
 
 function updateCarousel() {
   pianos.forEach((piano, index) => {
-    // base angle (in degrees) for this piano in the circle
     let baseAngle = index * angleStep;
-    // effective angle relative to the viewer (taking the carousel rotation into account)
-    let effectiveAngle = baseAngle + currentAngle;
-    // Normalize to range [-180, 180]
-    effectiveAngle = ((effectiveAngle + 180) % 360) - 180;
-    
-    // Determine a slight forward tilt (rotateX)
-    // Only the piano that is nearly front (effectiveAngle near 0) stays flat.
-    let tilt = 0;
-    if (Math.abs(effectiveAngle) >= 5) {
-      // Map the angle to a tilt value up to a maximum of 10deg
-      tilt = Math.min(10, (Math.abs(effectiveAngle) / 90) * 10);
-    }
-    
-    // Calculate the position on the circle using the effective angle (in radians)
+    let effectiveAngle = (baseAngle + currentAngle) % 360;
+
     let rad = (baseAngle + currentAngle) * (Math.PI / 180);
     let x = Math.sin(rad) * radius;
     let z = Math.cos(rad) * radius;
-    
-    // Rotate each piano so that it always faces the viewer.
-    // We use the negative of the current angle of the piano.
-    let rotateY = -(baseAngle + currentAngle);
-    
+    let y = (1 - Math.abs(Math.cos(rad))) * heightFactor;
+    let offsetX = Math.sin(rad) * offsetFactor;
+
+    if (Math.abs(effectiveAngle) < 144) {
+      y = 0;
+      offsetX = 0;
+    }
+
+    let rotateY = 0; // Default facing direction
+
+    if (Math.abs(effectiveAngle) < 36 || Math.abs(effectiveAngle) > 324) {
+      rotateY = 180; // Front piano faces back
+    } else if (Math.abs(effectiveAngle - 72) < 36) {
+      rotateY = -90; // Right-side piano faces left
+    } else if (Math.abs(effectiveAngle + 72) < 36) {
+      rotateY = 90; // Left-side piano faces right
+    } else {
+      rotateY = 0; // Back pianos face front
+    }
+
     piano.style.transform = `
-      translateX(${x}px) 
+      translateX(${x + offsetX}px) 
       translateZ(${z}px) 
-      rotateY(${rotateY}deg) 
-      rotateX(${tilt}deg)
+      translateY(${-y}px)
+      rotateY(${rotateY}deg)
     `;
   });
 }
 
-// Update carousel when buttons are clicked
 nextBtn.addEventListener("click", () => {
   currentAngle -= angleStep;
   updateCarousel();
@@ -54,5 +57,4 @@ prevBtn.addEventListener("click", () => {
   updateCarousel();
 });
 
-// Initial placement – the keys "fall into place" can be added as an extra animation if desired.
 updateCarousel();
