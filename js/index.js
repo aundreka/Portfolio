@@ -3,58 +3,154 @@ const prevBtn = document.getElementById("prevbtn");
 const nextBtn = document.getElementById("nextbtn");
 const pianos = document.querySelectorAll(".piano");
 
-let currentAngle = 0;
+let currentIndex = 0;
 const totalPianos = pianos.length;
 const angleStep = 360 / totalPianos;
 const radius = 620;
-const heightFactor = 120;
-const offsetFactor = 80;
+const heightFactor = 60;
+const offsetFactor = 60;
+const duration = 800;
+const colors = ["red", "blue", "green", "yellow", "purple"];
 
-function updateCarousel() {
+document.querySelectorAll(".piano").forEach((piano, index) => {
+  piano.addEventListener("load", async () => {
+      const model = piano.model;
+      if (!model) return; // Ensure model exists
+
+      const materials = model.materials;
+      if (!materials || materials.length === 0) return; // Ensure materials exist
+
+      const material = materials[0]; // Target the first material
+      const colorFactor = getColorFactor(colors[index]);
+
+      if (material.pbrMetallicRoughness) {
+          material.pbrMetallicRoughness.setBaseColorFactor(colorFactor);
+          material.pbrMetallicRoughness.baseColorTexture = null; // Remove any transparency from textures
+      }
+
+      // Ensure the material is not transparent
+      if (material.alphaMode) {
+          material.alphaMode = "OPAQUE"; // Explicitly set it to opaque
+      }
+  });
+});
+function getColorFactor(color) {
+  const colorMap = {
+    "red": [1, 0.9, 0.9, 1],    // Soft pastel red
+    "blue": [0.9, 0.95, 1, 1],   // Soft pastel blue
+    "green": [0.9, 1, 0.9, 1],   // Soft pastel green
+    "yellow": [1, 1, 0.9, 1],    // Soft pastel yellow
+    "purple": [0.9, 0.9, 1, 1]   // Soft pastel purple
+    };
+  return colorMap[color] || [1, 1, 1, 1]; // Default to white if not found
+}
+
+pianos.forEach((piano) => {
+  piano.style.transition = `transform ${duration}ms ease-out`;
+});
+
+function getCenterPiano() {
+  return [...pianos].reduce((closest, piano) => {
+    const orbit = piano.getAttribute("camera-orbit").split(" ");
+    const orbitX = parseFloat(orbit[0]); // Horizontal rotation
+    return Math.abs(orbitX) < Math.abs(closest.orbitX) ? { piano, orbitX } : closest;
+  }, { piano: pianos[0], orbitX: 999 }).piano;
+}
+
+function animateRotation(targetIndex) {
+  let targetAngle = targetIndex * angleStep;
+
   pianos.forEach((piano, index) => {
     let baseAngle = index * angleStep;
-    let effectiveAngle = (baseAngle + currentAngle) % 360;
+    let effectiveAngle = (baseAngle - targetAngle) % 360;
+    let rad = effectiveAngle * (Math.PI / 180);
 
-    let rad = (baseAngle + currentAngle) * (Math.PI / 180);
     let x = Math.sin(rad) * radius;
     let z = Math.cos(rad) * radius;
     let y = (1 - Math.abs(Math.cos(rad))) * heightFactor;
     let offsetX = Math.sin(rad) * offsetFactor;
 
-    if (Math.abs(effectiveAngle) < 144) {
-      y = 0;
+    if (Math.abs(effectiveAngle) < 30) {
+      y = -30;
       offsetX = 0;
     }
 
-    let rotateY = 0; // Default facing direction
-
-    if (Math.abs(effectiveAngle) < 36 || Math.abs(effectiveAngle) > 324) {
-      rotateY = 180; // Front piano faces back
-    } else if (Math.abs(effectiveAngle - 72) < 36) {
-      rotateY = -90; // Right-side piano faces left
-    } else if (Math.abs(effectiveAngle + 72) < 36) {
-      rotateY = 90; // Left-side piano faces right
-    } else {
-      rotateY = 0; // Back pianos face front
-    }
-
+    let orbitX = -effectiveAngle;
+    piano.setAttribute("camera-orbit", `${orbitX}deg 90deg 90deg`);
     piano.style.transform = `
       translateX(${x + offsetX}px) 
       translateZ(${z}px) 
-      translateY(${-y}px)
-      rotateY(${rotateY}deg)
-    `;
+      translateY(${-y}px)`;
+
+    let depth = Math.cos(rad); // Closer to 1 means closer to viewer
+    piano.style.zIndex = Math.round((depth + 1) * 100); // Scale from 0 to 200
+  
   });
+
+  currentIndex = targetIndex % totalPianos;
 }
 
 nextBtn.addEventListener("click", () => {
-  currentAngle -= angleStep;
-  updateCarousel();
+  animateRotation((currentIndex + 1) % totalPianos);
 });
 
 prevBtn.addEventListener("click", () => {
-  currentAngle += angleStep;
-  updateCarousel();
+  animateRotation((currentIndex - 1 + totalPianos) % totalPianos);
 });
 
-updateCarousel();
+animateRotation(0);
+
+// 🎯 **Dynamic Dragging for Center Piano**
+let isDragging = false;
+let startX = 0, startY = 0;
+let lastOrbitX = 90, lastOrbitY = 90;
+
+function startDrag(event) {
+  isDragging = true;
+  startX = event.clientX || event.touches[0].clientX;
+  startY = event.clientY || event.touches[0].clientY;
+
+  let centerPiano = getCenterPiano();
+  let orbit = centerPiano.getAttribute("camera-orbit").split(" ");
+  lastOrbitX = parseFloat(orbit[0]);
+  lastOrbitY = parseFloat(orbit[1]);
+
+  event.preventDefault();
+}
+
+function drag(event) {
+  if (!isDragging) return;
+  
+  let clientX = event.clientX || event.touches[0].clientX;
+  let clientY = event.clientY || event.touches[0].clientY;
+  
+  let deltaX = clientX - startX;
+  let deltaY = clientY - startY;
+
+  let sensitivityX = 0.2;
+  let sensitivityY = 0.15;
+
+  let newOrbitX = lastOrbitX - deltaX * sensitivityX;
+  let newOrbitY = lastOrbitY - deltaY * sensitivityY;
+  newOrbitY = Math.max(75, Math.min(105, newOrbitY));
+  newOrbitX = Math.max(-30, Math.min(30, newOrbitX));
+
+  let centerPiano = getCenterPiano();
+  centerPiano.setAttribute("camera-orbit", `${newOrbitX}deg ${newOrbitY}deg 90deg`);
+}
+
+function stopDrag() {
+  isDragging = false;
+  setTimeout(() => {
+    let centerPiano = getCenterPiano();
+    centerPiano.setAttribute("camera-orbit", "0deg 90deg 90deg");
+  }, 500);
+}
+
+carousel.addEventListener("mousedown", startDrag);
+carousel.addEventListener("touchstart", startDrag);
+
+window.addEventListener("mousemove", drag);
+window.addEventListener("touchmove", drag);
+window.addEventListener("mouseup", stopDrag);
+window.addEventListener("touchend", stopDrag);
